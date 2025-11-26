@@ -1,7 +1,7 @@
 use std::thread;
 use std::time::Duration;
 use std::sync::mpsc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 fn spawn_function() {
     for i in 0..5 {
@@ -96,10 +96,11 @@ fn main() {
     }
 
     println!("-------------------");
-    let counter = Mutex::new(0);
+    let counter = Arc::new(Mutex::new(0));
     let mut handles = vec![];
 
     for _ in 0..10 {
+        let counter = Arc::clone(&counter);
         let handle = thread::spawn(move || {
             let mut num = counter.lock().unwrap();
 

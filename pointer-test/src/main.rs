@@ -4,6 +4,24 @@ use std::cell::RefCell;
 use std::sync::Mutex;
 use std::sync::RwLock;
 
+use crate::List::{Cons, Nil};
+
+// 定义一个链表枚举，用于演示循环引用
+#[derive(Debug)]
+enum List {
+    Cons(i32, RefCell<Rc<List>>),
+    Nil,
+}
+
+impl List {
+    fn tail(&self) -> Option<&RefCell<Rc<List>>> {
+        match self {
+            Cons(_, item) => Some(item),
+            Nil => None,
+        }
+    }
+}
+
 // 定义一个结构体，用于存储数据
 #[derive(Debug)]
 struct Data {
@@ -45,4 +63,22 @@ fn main() {
     // 打印克隆后的 Rc 智能指针
     println!("Data clone 1: {:?}", data_clone1);
     println!("Data clone 2: {:?}", data_clone2);
+
+    let a = Rc::new(Cons(5, RefCell::new(Rc::new(Nil))));
+
+    println!("a initial rc count = {}", Rc::strong_count(&a));
+    println!("a next item = {:?}", a.tail());
+
+    let b = Rc::new(Cons(10, RefCell::new(Rc::clone(&a))));
+
+    println!("a rc count after b creation = {}", Rc::strong_count(&a));
+    println!("b initial rc count = {}", Rc::strong_count(&b));
+    println!("b next item = {:?}", b.tail());
+
+    if let Some(link) = a.tail() {
+        *link.borrow_mut() = Rc::clone(&b);
+    }
+
+    println!("b rc count after changing a = {}", Rc::strong_count(&b));
+    println!("a rc count after changing a = {}", Rc::strong_count(&a));
 }
