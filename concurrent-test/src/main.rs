@@ -96,6 +96,16 @@ fn main() {
     }
 
     println!("-------------------");
+    let m = Mutex::new(5);
+
+    {
+        let mut num = m.lock().unwrap();
+        *num = 6;
+    }
+
+    println!("m = {m:?}");
+
+    println!("-------------------");
     let counter = Arc::new(Mutex::new(0));
     let mut handles = vec![];
 
